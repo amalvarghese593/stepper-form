@@ -1,7 +1,10 @@
 import React from "react";
+import { useWizard } from "../ui/wizard/wizard-context";
 import Form from "./Form";
 
-export const Personal = ({ formik }) => {
+export const Personal = () => {
+  const { formik } = useWizard();
+
   return (
     <div>
       <h2>Personal</h2>

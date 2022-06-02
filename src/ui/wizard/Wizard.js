@@ -1,36 +1,45 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Formik, Form, useFormik } from "formik";
-import * as Yup from "yup";
+import React, { useEffect, useCallback, useState } from "react";
 import { Stepper } from "../../components/Stepper";
+import { useWizard, WizardContext } from "./wizard-context";
+import { Formik, Form, useFormik } from "formik";
 
 function Wizard({
   children,
-  initial,
   steps,
-  onSubmit,
   validation,
   initialValues,
-  orientation,
+  orientation: defaultOrientation,
 }) {
-  const [step, setStep] = useState(initial || 1);
+  // const childrenArray = React.Children.toArray(children);
+  const [step, setStep] = useState(1);
+
   const [isCompleted, setIsCompleted] = useState({});
-  const totalPages = React.Children.count(children);
+  const totalPages = steps.length;
+  const [orientation, setOrientation] = useState("");
 
   useEffect(() => {
-    formik.validateForm();
-  }, [step]);
+    const handleResize = () => {
+      if (window.innerWidth <= 480) {
+        setOrientation("vertical");
+      } else {
+        setOrientation("horizontal");
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const nextButtonHandler = useCallback(
     (values, bag) => {
-      // console.log({ values });
-      // console.log({ bag });
-      if (totalPages === step) {
+      if (step === totalPages) {
+        setIsCompleted((prev) => ({ ...prev, [step - 1]: true }));
         alert("Final Submit");
       }
       if (step < totalPages) {
         setStep((prev) => prev + 1);
         setIsCompleted((prev) => ({ ...prev, [step - 1]: true }));
-        // setActiveStep(activeStep + 1);
         bag.setTouched({});
         bag.setSubmitting(false);
       }
@@ -44,101 +53,49 @@ function Wizard({
     validateOnMount: true,
     onSubmit: nextButtonHandler,
   });
-
-  // console.log("values: ", formik.values);
-  // console.log("errors: ", formik.errors);
-  // console.log("touched: ", formik.touched);
-  // console.log("formik: ", formik);
-
   const prevButtonHandler = useCallback(() => {
     setStep((prev) => prev - 1);
     formik.setErrors({});
   }, []);
 
-  // useEffect(() => {}, [formik.isSubmitting, formik.errors]);
-  // console.log(formik.errors, formik.touched, formik.isValid);
+  useEffect(() => {
+    formik.validateForm();
+  }, [step]);
 
-  //1. dont put nextbtnhandlr inside render function.it affects performance because whoever children we are passing this function to,
-  //would get re-rendered whenever the parent component(ie wizard) re-renders.if we put nextbtnhandlr outside render function
-  //we can call usecallback hook to prevent children getting re-rendered.
-  //2. if we had used <Formik> instead of useFormik hook we would have to pass setFieldTouch outside render method to nextbtnhndlr
-  //there are 3 ways to achieve it:- 1) use useformik instead of <Formik> 2) use apply,bind,call to bind nxtbtnhndlr to
-  //formik props. 3) pass formik props as argument to nxtbtnhndlr when its called from Wizard.step
+  //context state
+  const contextValue = {
+    step,
+    setStep,
+    steps,
+    totalPages,
+    formik,
+    validation,
+    prevButtonHandler,
+    isCompleted,
+    setIsCompleted,
+    orientation: defaultOrientation || orientation,
+  };
 
-  // const { isValid, setFieldTouched } = formik;
-  // const stepperbtnHandler = () => {
-  //   for (let key in validation[index - 1].fields) {
-  //     formik.setFieldTouched(key);
-  //   }
-  //   if (formik.isValid) {
-  //     setStep(index + 1);
-  //   }
-  // };
   return (
-    // <Formik
-    //   initialValues={initialValues}
-    //   validationSchema={validation[step - 1]}
-    //   validateOnMount={true}
-    //   onSubmit={nextButtonHandler}
-    // >
-    // {(formik) => {
-    //   console.log("values: ", formik.values);
-    //   console.log("errors: ", formik.errors);
-    //   console.log("touched: ", formik.touched);
-    // console.log("formik: ", formik);
-    // return (
-    <form onSubmit={formik.handleSubmit} className="stepper-form">
-      {React.Children.map(children, (element, index) => {
-        let originIndex = index + 1;
-        if (originIndex === step)
-          return React.cloneElement(element, {
-            step,
-            totalPages,
-            setStep,
-            steps,
-            nextButtonHandler,
-            isCompleted,
-            setIsCompleted,
-            formik,
-            prevButtonHandler,
-            validation,
-            orientation,
-          });
-      })}
-    </form>
+    <WizardContext.Provider value={contextValue}>
+      <form onSubmit={formik.handleSubmit} className="stepper-form">
+        {/* {childrenArray[0].props.children[step - 1]} */}
+        {children}
+      </form>
+    </WizardContext.Provider>
   );
-  // }}
-  // </Formik>
-  // );
 }
 
 export default Wizard;
 
-Wizard.Step = ({
-  children,
-  step,
-  totalPages,
-  prevButtonHandler,
-  submitForm,
-  setStep,
-  nextButtonHandler,
-  validation,
-  isCompleted,
-  setIsCompleted,
-  formik,
-  steps,
-  orientation,
-}) => {
+const Step = ({ children }) => {
+  const { formik, step, steps, totalPages, prevButtonHandler, isCompleted } =
+    useWizard();
+
   return (
     <>
-      <Stepper
-        setStep={setStep}
-        setIsCompleted={setIsCompleted}
-        validation={validation}
-        values={formik.values} /* activeStep={1} */
-        setTouched={formik.setTouched}
-        orientation={orientation}
-      >
+      <div className="step-container-wrapper">
+        {/* <Stepper>
         {steps.map((el, index) => {
           return (
             <div key={el} className="stepper-container">
@@ -164,54 +121,53 @@ Wizard.Step = ({
                   {index + 1}
                 </span>
               )}
-              <button
-                type="button"
-                className="step-button"
-                // onClick={() => {
-                //   setStep(index + 1);
-                // }}
-              >
+              <button type="button" className="step-button">
                 {el}
               </button>
             </div>
           );
         })}
-      </Stepper>
-      <div className="horizontal-divider"></div>
-      <section className="step-section">{children(formik)}</section>
-      <div className="horizontal-divider"></div>
-      <div className="button-container">
-        {step !== 1 && (
-          <button
-            type="button"
-            onClick={prevButtonHandler}
-            // onClick={() => prevButtonHandler(formik)}
-            className="btn btn-primary me-3"
-          >
-            Previous
-          </button>
-        )}
-        {step !== totalPages ? (
-          <button
-            type="button"
-            onClick={formik.isValid ? formik.handleSubmit : () => {}}
-            className="btn btn-primary"
-            disabled={!formik.isValid}
-          >
-            Next
-          </button>
-        ) : (
-          // <button onClick={() => nextButtonHandler(formikProps)}>Next</button>
-          <button
-            type="submit"
-            onClick={formik.isValid ? formik.handleSubmit : () => {}}
-            disabled={!formik.isValid}
-            className="btn btn-primary"
-          >
-            Save
-          </button>
-        )}
+      </Stepper> */}
+        {/* <div className="horizontal-divider"></div> */}
+        <div className="form-btn-wrapper">
+          <section className="step-section">{children}</section>
+          {/* <div className="horizontal-divider"></div> */}
+          <div className="button-container">
+            {step !== 1 && (
+              <button
+                type="button"
+                onClick={prevButtonHandler}
+                className="btn btn-light border border-dark me-3"
+              >
+                Previous
+              </button>
+            )}
+            {step !== totalPages ? (
+              <button
+                type="button"
+                onClick={formik.isValid ? formik.handleSubmit : () => {}}
+                className="btn btn-primary"
+                disabled={!formik.isValid}
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                type="submit"
+                onClick={formik.isValid ? formik.handleSubmit : () => {}}
+                disabled={!formik.isValid}
+                className="btn btn-primary"
+              >
+                Save
+              </button>
+            )}
+          </div>
+        </div>
       </div>
+      {/* {orientation === "vertical" && (
+        <div className="horizontal-divider"></div>
+      )} */}
     </>
   );
 };
+Wizard.Step = Step;

@@ -1,13 +1,9 @@
 import React from "react";
+import { useWizard } from "../ui/wizard/wizard-context";
 
-export const Stepper = ({
-  /* activeStep, */ children,
-  setStep,
-  setIsCompleted,
-  setTouched,
-  validation,
-  values,
-}) => {
+export const Stepper = ({ children }) => {
+  const { setStep, setIsCompleted, formik, validation } = useWizard();
+  const { setTouched, values } = formik;
   return (
     <div className="stepper-wrapper">
       {React.Children.map(children, (element, index) => {

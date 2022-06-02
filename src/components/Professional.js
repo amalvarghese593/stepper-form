@@ -1,7 +1,9 @@
 import React from "react";
 import Form from "./Form";
+import { useWizard } from "../ui/wizard/wizard-context";
 
-export const Professional = ({ formik }) => {
+export const Professional = () => {
+  const { formik } = useWizard();
   return (
     <div>
       <h2>Professional</h2>

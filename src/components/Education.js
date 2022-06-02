@@ -1,7 +1,9 @@
 import React from "react";
 import Form from "./Form";
+import { useWizard } from "../ui/wizard/wizard-context";
 
-export const Education = ({ formik }) => {
+export const Education = () => {
+  const { formik } = useWizard();
   return (
     <div>
       <h2>Education</h2>
