@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import Wizard from "../ui/wizard/Wizard";
 import { Education } from "./Education";
 import { Personal } from "./Personal";
@@ -6,11 +6,8 @@ import { Professional } from "./Professional";
 import "./signup.css";
 import { StepperLatest } from "./StepperLatest";
 import * as Yup from "yup";
-import { Formik, Form, useFormik } from "formik";
 
 export const SignUp = () => {
-  //moving wizard state from wizrd-context to signup
-
   const steps = ["Personal", "Education", "Professional"];
   const initialValues = {
     firstName: "",
@@ -39,9 +36,6 @@ export const SignUp = () => {
     currentDesignation: Yup.string().required("Required"),
   });
   const validation = [page1Validation, page2Validation, page3Validation];
-  //   const onSubmit = (values, onSubmitProps) => {
-  //     alert("Form submitted successfully");
-  //   };
 
   return (
     <div className="signup-wrapper">
@@ -54,7 +48,7 @@ export const SignUp = () => {
             steps={steps}
             initialValues={initialValues}
             validation={validation}
-            orientation="vertical"
+            orientation="horizontal"
           >
             <StepperLatest>
               <Wizard.Step>

@@ -6,7 +6,7 @@ export const Professional = () => {
   const { formik } = useWizard();
   return (
     <div>
-      <h2>Professional</h2>
+      <h2 className="form-heading-h2">Professional</h2>
       <Form.Input
         type="text"
         name="currentCompanyName"

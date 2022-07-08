@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useWizard } from "../ui/wizard/wizard-context";
 
 export const StepperLatest = ({ children }) => {
@@ -12,11 +12,12 @@ export const StepperLatest = ({ children }) => {
     setIsCompleted,
     formik: { setTouched, values },
   } = useWizard();
-
   const stepHandler = (index) => {
     if (!index) return setStep(index + 1);
-    for (const key in validation[index - 1].fields) {
-      if (!values[key]) return;
+    for (let i = 1; i < index + 1; i++) {
+      for (const key in validation[i - 1].fields) {
+        if (!values[key]) return;
+      }
     }
     setStep(index + 1);
     setIsCompleted((prev) => ({ ...prev, [index - 1]: true }));
@@ -30,7 +31,10 @@ export const StepperLatest = ({ children }) => {
         {steps.map((el, index) => {
           return (
             <div key={el} className="stepper-container">
-              <div className="step-btn-value-container">
+              <div
+                onClick={() => stepHandler(index)}
+                className="step-btn-value-container"
+              >
                 <div className="step-icon-container">
                   {isCompleted[index] ? (
                     <svg
@@ -38,7 +42,6 @@ export const StepperLatest = ({ children }) => {
                       width="26"
                       height="26"
                       fill="#06c"
-                      // background="#fff"
                       className="bi bi-check-circle-fill"
                       viewBox="0 0 16 16"
                     >
@@ -57,11 +60,7 @@ export const StepperLatest = ({ children }) => {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={() => stepHandler(index)}
-                  type="button"
-                  className="step-button"
-                >
+                <button type="button" className="step-button">
                   {el}
                 </button>
               </div>
@@ -74,7 +73,7 @@ export const StepperLatest = ({ children }) => {
             </div>
           );
         })}
-        {orientation === "vertical" && <div className="vertical-line"></div>}
+        {/* {orientation === "vertical" && <div className="vertical-line"></div>} */}
       </div>
       {orientation === "horizontal" && (
         <div className="horizontal-divider"></div>

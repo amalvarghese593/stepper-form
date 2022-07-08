@@ -7,7 +7,7 @@ export const Personal = () => {
 
   return (
     <div>
-      <h2>Personal</h2>
+      <h2 className="form-heading-h2">Personal</h2>
       <div className="name-container">
         <Form.Input
           type="text"
@@ -32,12 +32,6 @@ export const Personal = () => {
           touched={formik.touched.lastName}
         />
       </div>
-      {/* <Form.DatePicker
-        name="dob"
-        placeholder="DD/MM/YYYY"
-        label="Date of Birth"
-        formik={formik}
-      /> */}
       <Form.Input
         type="email"
         name="email"
