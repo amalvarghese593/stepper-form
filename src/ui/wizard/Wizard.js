@@ -10,7 +10,6 @@ function Wizard({
   orientation: defaultOrientation = "horizontal",
 }) {
   const [step, setStep] = useState(1);
-
   const [isCompleted, setIsCompleted] = useState({});
   const totalPages = steps.length;
   const [orientation, setOrientation] = useState("");

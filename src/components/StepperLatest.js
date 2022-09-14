@@ -12,6 +12,7 @@ export const StepperLatest = ({ children }) => {
     setIsCompleted,
     formik: { setTouched, values },
   } = useWizard();
+
   const stepHandler = (index) => {
     if (!index) return setStep(index + 1);
     for (let i = 1; i < index + 1; i++) {

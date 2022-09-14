@@ -1,11 +1,12 @@
 import "./App.css";
 import { SignUp } from "./components/SignUp";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
   return (
     <div className="App">
       <Routes>
+        <Route element={<Navigate to="signup" />} path="/" />
         <Route element={<SignUp />} path="/signup" />
       </Routes>
     </div>
